@@ -1,7 +1,11 @@
 import Entry from "../components/Entry";
 const userName = "Roy";
 
-export default function Home(Acitve) {
+interface Active {
+    Active: boolean;
+}
+
+export default function Home(Acitve : Active) {
 
 
 

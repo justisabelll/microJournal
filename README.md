@@ -15,8 +15,9 @@ Welcome to the **MicroJournal**! This simple yet powerful web application allows
 
 This project is being built using the following technologies:
 
-- [TailwindCSS](https://tailwindcss.com/) for styling and responsive design
 - [React](https://reactjs.org/) with [Vite](https://vitejs.dev/) for building the user interface and improving development experience
+- [TypeScript](https://www.typescriptlang.org/) for adding static typing, improving code quality, and making the codebase more maintainable
+- [TailwindCSS](https://tailwindcss.com/) for styling and responsive design
 - [PocketBase](https://www.pocketbase.io/) for handling the database and storing user's journal entries
 
 ## Checking out MicroJournal 🫣

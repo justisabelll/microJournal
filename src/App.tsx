@@ -13,7 +13,7 @@ function App() {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
 
-    if (setIsSidebarOpen) {
+    if (isSidebarOpen) {
       setIsActive(!isActive);
     }
   };

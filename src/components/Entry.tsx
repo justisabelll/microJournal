@@ -1,4 +1,14 @@
-export default function Entry(entries) {
+
+interface Entries {
+  entries: {
+    text: string;
+    date: string;
+    time: string;
+    entryId: number;
+  }[];
+}
+
+export default function Entry(entries : Entries) {
   return (
     <>
       <div className="p-4 bg-primary rounded-lg m-4">
