@@ -1,11 +1,7 @@
 import Entry from "../components/Entry";
 const userName = "Roy";
 
-interface Active {
-    Active: boolean;
-}
-
-export default function Home(Acitve : Active) {
+export default function Home() {
 
 
 
@@ -28,7 +24,7 @@ export default function Home(Acitve : Active) {
 
     return (
         
-        <div className={Acitve.Active ? "" : "blur-lg"}>
+        <div className="">
             <h1 className="text-xl font-bold ml-4 mt-2">Hi, {userName}</h1>
             <div className="flex flex-col">
                 

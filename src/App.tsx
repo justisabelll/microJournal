@@ -43,9 +43,9 @@ function App() {
             </div>
           )}
         </div>
-        <div className="w-screen h-screen">
+        <div className={`w-screen h-screen ${isSidebarOpen ? 'blur-xl' : ''}`}>
           <Routes>
-            <Route path="/" element={<Home Active={isActive} />} />
+            <Route path="/" element={<Home />} />
             <Route path="/what-is-this" element={<WhatIsThis />} />
           </Routes>
         </div>
