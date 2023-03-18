@@ -19,7 +19,7 @@ export default function Sidebar() {
   return (
     <div>
      
-        <div className="fixed inset-0 flex md:static ">
+        <div className="inset-0 flex md:static ">
           <div className="flex flex-col w-64 ">
             <div className="flex items-center justify-center
             bg-secondary h-24 rounded-br-lg mb-2">

@@ -26,7 +26,7 @@ function App() {
             <>
               <Sidebar />
               <button
-                className="btn z-50 absolute top-0 left-60 ml-4 hover:text-accent-focus text-lg text-red-500 border-none bg-transparent"
+                className="z-50 btn absolute top-0 left-60 ml-4 hover:text-accent-focus text-lg text-red-500 border-none bg-transparent"
                 onClick={toggleSidebar}
               >
                 <AiOutlineClose size={30} />
