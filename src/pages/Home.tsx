@@ -59,7 +59,7 @@ export default function Home(isUserLoggedIn) {
     return (
       <>
         <AuthModal />
-        <div className="blur-lg">
+        <div className="blur-2xl">
         <h1 className="text-xl font-bold ml-4 mt-2">Hi, </h1>
           <div className="flex flex-col">
             <Entry entries={userEntries} />
