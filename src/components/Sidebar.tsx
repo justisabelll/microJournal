@@ -17,14 +17,14 @@ const SidebarRoutes = [
 export default function Sidebar() {
 
   return (
-    <div>
+    <div className="">
      
-        <div className="inset-0 flex md:static ">
+        <div className="inset-0 flex md:static bg-transparent ">
           <div className="flex flex-col w-64 ">
             <div className="flex items-center justify-center
-            bg-secondary h-24 rounded-br-lg mb-2">
-              <span className="text-4xl font-bold italic box-decoration-clone bg-gradient-to-r from-primary to-accent text-white px-2 rounded-lg pb-0.5">
-                <span className="lowercase text-2xl text-accent-content">
+            bg-primary-focus h-24 rounded-br-lg mb-2">
+              <span className="text-4xl font-bold italic box-decoration-clone  text-white px-2 rounded-sm pb-0.5">
+                <span className="lowercase text-2xl text-secondary-content">
                 Micro
                 </span>
                 Journal 
@@ -32,7 +32,7 @@ export default function Sidebar() {
             </div>
 
             <div className="flex flex-col flex-1 overflow-y-auto">
-              <nav className="h-screen px-2 py-4 bg-secondary-focus rounded-tr-lg ">
+              <nav className="h-screen px-2 py-4 bg-primary-focus rounded-tr-lg ">
                 <ul className="space-y-1">
                   {SidebarRoutes.map((route) => (
                     <li key={route.title}>
