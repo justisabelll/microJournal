@@ -11,7 +11,7 @@ import { MdLogout } from "react-icons/md";
 export interface EntryType {
   id: string;
   entry_text: string;
-  created: string;
+  created?: string;
   entry_tags?: string[];
 }
 
@@ -19,46 +19,25 @@ export interface EntriesType {
   entries: EntryType[];
 }
 
-interface AuthData {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-}
-
-// const getAuthUser = async () => {
-//   const authData = await pb
-//     .collection("users")
-//     .authWithPassword("test", "testingtesting");
-//   return console.log("logged in");
-// };
-
-// getAuthUser();
-
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [authStatus, authStatusUpdate] = useState(pb.authStore.isValid);
 
-
- 
   pb.authStore.onChange(() => {
     authStatusUpdate(pb.authStore.isValid);
   });
 
-  const {
-    data: userEntries,
-    isLoading,
-    error,
-  } = useQuery(["entries"], getEntries, {
+  const { data: userEntries, error } = useQuery(["entries"], getEntries, {
     refetchOnWindowFocus: false,
   });
+
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
   //  fix this implementation later
-  // if (!isLoaded) return <div>Loading...</div>;
+
   if (error) return <div>Error fetching entries</div>;
   if (!userEntries) return <div>No entries</div>;
 
@@ -74,15 +53,15 @@ export default function Home() {
       </>
     );
   } else {
-    const currentUser = pb.authStore.model.first_name;
+    const currentUser = pb.authStore.model?.first_name;
     return (
       <>
-        <div className="flex">
+        <div className="flex bg-rosePine-overlay font-semibold">
           {isSidebarOpen && (
             <div className="z-50">
               <Sidebar />
               <button
-                className="btn absolute top-0 left-60 ml-4 hover:text-accent-focus text-lg text-red-500 border-none bg-transparent"
+                className="absolute top-0 left-60 ml-4 hover:text-accent-focus text-lg text-red-500 border-none bg-transparent"
                 onClick={toggleSidebar}
               >
                 <AiOutlineClose size={30} />
@@ -97,20 +76,22 @@ export default function Home() {
             {!isSidebarOpen && (
               <div>
                 <button
-                  className="mt-3 relative top-0 left-4 text-2xl hover:text-accent-focus"
+                  className="text-rosePine-text mt-3 relative top-0 left-4 text-2xl hover:text-accent-focus"
                   onClick={toggleSidebar}
                 >
                   <FaBars />
                 </button>
                 <button
-                  className="mt-3 fixed top-0 right-3 text-2xl hover:text-accent-focus"
+                  className="hover:text-rosePine-muted text-rosePine-text mt-3 fixed top-0 right-3 text-2xl hover:text-accent-focus"
                   onClick={() => pb.authStore.clear()}
                 >
                   <MdLogout />
                 </button>
               </div>
             )}
-            <h1 className="text-xl font-bold ml-4 mt-2">Hi, {currentUser}</h1>
+            <h1 className="text-xl font-bold ml-4 mt-2 text-rosePine-text">
+              Hi, {currentUser}
+            </h1>
             <div className="flex flex-col">
               <Entry entries={userEntries} />
             </div>
