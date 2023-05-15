@@ -18,7 +18,7 @@ export async function _saveEntry(owner: string, text: string, tags?: string[]) {
 	const data = {
 		entry_owner: owner,
 		entry_text: text,
-		entry_tags: tags
+		entry_tags: JSON.stringify(tags) // convert array to JSON string
 	};
 
 	try {
@@ -38,6 +38,27 @@ export async function _deleteEntry(id: string) {
 	}
 
 	return 'OK';
+}
+
+export async function _showTag(tags: string[]) {
+	const response = {
+		status: '',
+		body: {}
+	};
+
+	const tagString = tags.map((tag) => `"${tag}"`).join(',');
+
+	try {
+		response.body = await _pb.collection('entries').getFullList({
+			filter: `entry_tags ~ ${tagString}`
+		});
+	} catch (error) {
+		response.status = 'NOT OKAY';
+		return response;
+	}
+
+	response.status = 'OK';
+	return response;
 }
 
 export async function load() {

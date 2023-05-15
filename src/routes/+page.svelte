@@ -3,9 +3,17 @@
 	import { Trash2 } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import type { Entry } from '../lib/types';
-	import { _pb, _saveEntry, _deleteEntry, _formatDate } from './+page';
-	import { Toast, toastStore } from '@skeletonlabs/skeleton';
+	import { _pb, _saveEntry, _deleteEntry, _formatDate, _showTag } from './+page';
+	import { Toast, toastStore, InputChip, LightSwitch } from '@skeletonlabs/skeleton';
 	import type { ToastSettings } from '@skeletonlabs/skeleton';
+
+	let user: any;
+	let entries: Entry[] = [];
+	let entryText: string;
+	let entryTags: string[];
+	let toast: ToastSettings;
+	let selectedTag: string | null = null;
+	$: isTagSelected = (tag: string) => tag === selectedTag;
 
 	const auth = async function auth() {
 		const authData = await _pb
@@ -25,18 +33,37 @@
 		}
 	}
 
-	let user: any;
-	let entries: Entry[] = [];
-	let text: string;
-	let toast: ToastSettings;
-
 	onMount(async () => {
 		user = await auth();
 		await fetchEntries();
 	});
 
-	const handleSave = async function handleSave(entryText: string) {
-		const response = await _saveEntry(user.record.id, entryText);
+	const handleTagClick = async function handleTagClick(tag: string) {
+		if (tag === selectedTag) {
+			// The clicked tag is the same as the currently selected tag.
+			// Clear the filter and fetch all entries again.
+			selectedTag = null;
+			await fetchEntries();
+		} else {
+			// The clicked tag is different from the currently selected tag.
+			// Fetch entries for the clicked tag and update the selected tag.
+			const response = await _showTag([tag]);
+			if (response.status == 'NOT OK') {
+				toast = {
+					message: 'There was an error displaying the tag, please try again',
+					timeout: 1000,
+					background: 'variant-filled-error'
+				};
+				toastStore.trigger(toast);
+			} else {
+				entries = response.body as Entry[];
+				selectedTag = tag;
+			}
+		}
+	};
+
+	const handleSave = async function handleSave(text: string, tags: string[]) {
+		const response = await _saveEntry(user.record.id, text, tags);
 		if (response == 'NOT OK') {
 			toast = {
 				message: 'There was an error saving your entry, please try again',
@@ -52,9 +79,9 @@
 			};
 			toastStore.trigger(toast);
 		}
-
 		await fetchEntries();
-		text = '';
+		entryText = '';
+		entryTags = [];
 	};
 
 	const handleDelete = async function handleDelete(entryId: string) {
@@ -81,27 +108,76 @@
 </script>
 
 <div>
-	<h1 class="mt-4">Hi, {user?.record?.first_name}</h1>
-	<div class="bg-primary-400 p-8 m-4 rounded-md shadow-lg">
-		<h1 class="text-3xl">What's on your mind?</h1>
-		<textarea bind:value={text} class="text-black rounded-md w-full" placeholder="type here..." />
-		<button
-			on:click={() => handleSave(text)}
-			type="button"
-			class="mt-2 btn variant-filled-secondary">Save</button
-		>
+	<div class="flex justify-between m-4">
+		<h1 class="">Hi, {user?.record?.first_name}</h1>
+		<div class="ml-auto">
+			<LightSwitch bgDark="bg-primary-500" rounded="rounded-full" />
+		</div>
 	</div>
+
+	<div
+		class="ring-1 ring-surface-800 dark:ring-tertiary-900 dark:bg-surface-500 p-8 m-4 rounded-sm shadow-lg"
+	>
+		<h1 class="text-3xl">What's on your mind?</h1>
+		<textarea
+			bind:value={entryText}
+			class="text-black rounded-md w-full"
+			placeholder="type here..."
+		/>
+		<div class="md:flex items-center">
+			<InputChip
+				class="variant-filled-tertiary mr-2"
+				bind:value={entryTags}
+				name="tags"
+				placeholder="tag your entry"
+			/>
+			<p class="text-xs mt-2">After typing each tag, press Enter.</p>
+		</div>
+
+		<button
+			on:click={() => handleSave(entryText, entryTags)}
+			type="button"
+			class="mt-2 btn variant-filled-primary shadow-md ring-secondary-100"
+		>
+			Save
+		</button>
+	</div>
+
 	<div>
 		{#each entries as entry}
-			<div class="bg-primary-400 p-8 m-4 rounded-md shadow-lg md:flex">
+			<div
+				class="dark:bg-surface-500 p-8 m-4 ring-1 ring-surface-800 dark:ring-tertiary-900 rounded-sm shadow-lg md:flex"
+			>
 				<div class="m-2 flex-grow text-xl">
-					<p>{entry.entry_text}</p>
-					<time class="text-xs text-red-700">
-						{_formatDate(new Date(entry.created))}
-					</time>
+					<!-- New flex container -->
+					<div class="flex flex-col">
+						<p>{entry.entry_text}</p>
+						{#if Array.isArray(entry.entry_tags)}
+							<div>
+								{#each entry.entry_tags as tag}
+									<button
+										on:click={() => handleTagClick(tag)}
+										on:keypress={() => handleTagClick(tag)}
+										class="inline-flex items-center px-2.5 py-0.5 rounded-full m-0.5 text-xs font-medium bg-primary-100 text-primary-800
+										{isTagSelected(tag) ? 'ring-primary-800 ring-2 ' : ''}"
+									>
+										#{tag}
+									</button>
+								{/each}
+							</div>
+						{/if}
+						<div>
+							<time class="text-xs text-primary-800">
+								{_formatDate(new Date(entry.created))}
+							</time>
+						</div>
+					</div>
 				</div>
 				<div>
-					<button on:click={() => handleDelete(entry.id)} class="mt-2 btn variant-filled-secondary">
+					<button
+						on:click={() => handleDelete(entry.id)}
+						class="mt-2 btn variant-filled-primary shadow-md"
+					>
 						<Trash2 class="inline-block mr-2" />
 						<span>Delete</span>
 					</button>
@@ -109,6 +185,7 @@
 			</div>
 		{/each}
 	</div>
+
 	<Toast position={'br'} max={2} buttonDismiss={'hidden'} />
 </div>
 
