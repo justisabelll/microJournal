@@ -1,32 +1,41 @@
 <script lang="ts">
 	import { load } from './+page';
-	import { Trash2 } from 'lucide-svelte';
+	import { Trash2, LogOut } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import type { Entry } from '../lib/types';
-	import { _pb, _saveEntry, _deleteEntry, _formatDate, _showTag } from './+page';
-	import { Toast, toastStore, InputChip, LightSwitch } from '@skeletonlabs/skeleton';
-	import type { ToastSettings } from '@skeletonlabs/skeleton';
 
-	let user: any;
+	import { _pb, _saveEntry, _deleteEntry, _formatDate, _showTag } from './+page';
+	import {
+		Toast,
+		toastStore,
+		InputChip,
+		LightSwitch,
+		drawerStore,
+		type DrawerSettings,
+		type ToastSettings
+	} from '@skeletonlabs/skeleton';
+
 	let entries: Entry[] = [];
 	let entryText: string;
 	let entryTags: string[];
+	$: isTagSelected = (tag: string) => tag === selectedTag;
 	let toast: ToastSettings;
 	let selectedTag: string | null = null;
-	$: isTagSelected = (tag: string) => tag === selectedTag;
+	let user = _pb.authStore;
 
-	const auth = async function auth() {
-		const authData = await _pb
-			.collection('users')
-			.authWithPassword('test@gmail.com', 'passtheword')
-			.catch((err) => {
-				console.log(err);
-			});
+	$: {
+		if (!user.isValid && !$drawerStore.open) {
+			openDrawer();
+		} else if (user.isValid && $drawerStore.open) {
+			closeDrawer();
+		}
+	}
 
-		return authData; // Return the authData
+	const settings: DrawerSettings = {
+		id: 'drawer-no-auth'
 	};
 
-	async function fetchEntries() {
+	export async function fetchEntries() {
 		const response = await load();
 		if (response.status === 200) {
 			entries = response.body.entries;
@@ -34,9 +43,16 @@
 	}
 
 	onMount(async () => {
-		user = await auth();
 		await fetchEntries();
 	});
+
+	const openDrawer = function openDrawer() {
+		drawerStore.open(settings);
+	};
+
+	const closeDrawer = function closeDrawer() {
+		drawerStore.close();
+	};
 
 	const handleTagClick = async function handleTagClick(tag: string) {
 		if (tag === selectedTag) {
@@ -63,7 +79,8 @@
 	};
 
 	const handleSave = async function handleSave(text: string, tags: string[]) {
-		const response = await _saveEntry(user.record.id, text, tags);
+		const id = user.model?.id as string;
+		const response = await _saveEntry(id, text, tags);
 		if (response == 'NOT OK') {
 			toast = {
 				message: 'There was an error saving your entry, please try again',
@@ -105,13 +122,28 @@
 
 		await fetchEntries();
 	};
+
+	const handleLogout = async function handleLogout() {
+		await _pb.authStore.clear();
+	};
+
+	_pb.authStore.onChange(() => {
+		user = _pb.authStore;
+		fetchEntries();
+	});
 </script>
 
 <div>
 	<div class="flex justify-between m-4">
-		<h1 class="">Hi, {user?.record?.first_name}</h1>
-		<div class="ml-auto">
-			<LightSwitch bgDark="bg-primary-500" rounded="rounded-full" />
+		<h1 class="">Hi, {user?.model?.first_name}</h1>
+		<div class="inline-flex gap-x-2">
+			<LightSwitch class="self-center" bgDark="bg-primary-500" rounded="rounded-full" />
+			<button
+				class="btn shadow-md p-1 text-xs variant-filled-primary"
+				on:click={() => handleLogout()}
+			>
+				Log Out <LogOut class="ml-1" size={20} />
+			</button>
 		</div>
 	</div>
 
@@ -133,7 +165,6 @@
 			/>
 			<p class="text-xs mt-2">After typing each tag, press Enter.</p>
 		</div>
-
 		<button
 			on:click={() => handleSave(entryText, entryTags)}
 			type="button"
@@ -142,51 +173,53 @@
 			Save
 		</button>
 	</div>
-
-	<div>
-		{#each entries as entry}
-			<div
-				class="dark:bg-surface-500 p-8 m-4 ring-1 ring-surface-800 dark:ring-tertiary-900 rounded-sm shadow-lg md:flex"
-			>
-				<div class="m-2 flex-grow text-xl">
-					<!-- New flex container -->
-					<div class="flex flex-col">
-						<p>{entry.entry_text}</p>
-						{#if Array.isArray(entry.entry_tags)}
-							<div>
-								{#each entry.entry_tags as tag}
-									<button
-										on:click={() => handleTagClick(tag)}
-										on:keypress={() => handleTagClick(tag)}
-										class="inline-flex items-center px-2.5 py-0.5 rounded-full m-0.5 text-xs font-medium bg-primary-100 text-primary-800
+	{#if user}
+		<div>
+			{#each entries as entry}
+				<div
+					class="dark:bg-surface-500 p-8 m-4 ring-1 ring-surface-800 dark:ring-tertiary-900 rounded-sm shadow-lg md:flex"
+				>
+					<div class="m-2 flex-grow text-xl">
+						<!-- New flex container -->
+						<div class="flex flex-col">
+							<p>{entry.entry_text}</p>
+							{#if Array.isArray(entry.entry_tags)}
+								<div>
+									{#each entry.entry_tags as tag}
+										<button
+											on:click={() => handleTagClick(tag)}
+											on:keypress={() => handleTagClick(tag)}
+											class="inline-flex items-center px-2.5 py-0.5 rounded-full m-0.5 text-xs font-medium bg-primary-100 text-primary-800
 										{isTagSelected(tag) ? 'ring-primary-800 ring-2 ' : ''}"
-									>
-										#{tag}
-									</button>
-								{/each}
+										>
+											#{tag}
+										</button>
+									{/each}
+								</div>
+							{/if}
+							<div>
+								<time class="text-xs text-primary-800">
+									{_formatDate(new Date(entry.created))}
+								</time>
 							</div>
-						{/if}
-						<div>
-							<time class="text-xs text-primary-800">
-								{_formatDate(new Date(entry.created))}
-							</time>
 						</div>
 					</div>
+					<div>
+						<button
+							on:click={() => handleDelete(entry.id)}
+							class="mt-2 btn variant-filled-primary shadow-md"
+						>
+							<Trash2 class="inline-block mr-2" />
+							<span>Delete</span>
+						</button>
+					</div>
 				</div>
-				<div>
-					<button
-						on:click={() => handleDelete(entry.id)}
-						class="mt-2 btn variant-filled-primary shadow-md"
-					>
-						<Trash2 class="inline-block mr-2" />
-						<span>Delete</span>
-					</button>
-				</div>
-			</div>
-		{/each}
-	</div>
-
-	<Toast position={'br'} max={2} buttonDismiss={'hidden'} />
+			{/each}
+		</div>
+		<Toast position={'br'} max={2} buttonDismiss={'hidden'} />
+	{:else}
+		{openDrawer()}
+	{/if}
 </div>
 
 <style>

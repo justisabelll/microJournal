@@ -3,6 +3,18 @@ import type { Entry } from '$lib/types';
 
 export const _pb = new Pocketbase('http://127.0.0.1:8090');
 
+export async function _auth(email: string, password: string) {
+	let authError = '';
+
+	try {
+		await _pb.collection('users').authWithPassword(email, password);
+	} catch (err: any) {
+		authError = err.response.message + ' Please try again.';
+	}
+
+	return authError;
+}
+
 export const _formatDate = (timestamp: Date) => {
 	return timestamp.toLocaleString('en-US', {
 		hour: 'numeric',
@@ -51,6 +63,7 @@ export async function _showTag(tags: string[]) {
 	try {
 		response.body = await _pb.collection('entries').getFullList({
 			filter: `entry_tags ~ ${tagString}`
+			//TODO: Tags that contain the tag string will also be shown even if it's not the exact tag ex: "tag" will also show "tagged"
 		});
 	} catch (error) {
 		response.status = 'NOT OKAY';

@@ -1,0 +1,55 @@
+- .DS_Store
+- .eslintignore
+- .eslintrc.cjs
+- .gitignore
+- .npmrc
+- .prettierignore
+- .prettierrc
+- .svelte-kit
+  - ambient.d.ts
+  - generated
+    - client
+      - app.js
+      - matchers.js
+      - nodes
+        - 0.js
+        - 1.js
+        - 2.js
+        - 3.js
+    - root.svelte
+    - server
+      - internal.js
+  - tsconfig.json
+  - types
+    - route_meta_data.json
+    - src
+      - routes
+        - $types.d.ts
+        - about
+          - $types.d.ts
+- README.md
+- package-lock.json
+- package.json
+- postcss.config.cjs
+- src
+  - .DS_Store
+  - app.d.ts
+  - app.html
+  - app.postcss
+  - components
+    - signIn.svelte
+  - lib
+    - types.ts
+  - routes
+    - +layout.svelte
+    - +page.svelte
+    - +page.ts
+    - about
+      - +page.svelte
+  - theme.postcss
+- static
+  - favicon.png
+- svelte.config.js
+- tailwind.config.cjs
+- tsconfig.json
+- vite.config.ts
